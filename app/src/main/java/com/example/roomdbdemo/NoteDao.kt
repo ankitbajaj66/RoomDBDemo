@@ -24,6 +24,8 @@ interface NoteDao {
     @Query("delete from note_table")
     fun deleteAllNotes()
 
+    // Becuase we are returning the livedata object here, it will do the bg task itself.
     @Query("select * from note_table ORDER BY prority DESC")
     fun getAllNotes(): LiveData<List<Note>>
+
 }

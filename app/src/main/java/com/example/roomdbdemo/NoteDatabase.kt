@@ -1,9 +1,11 @@
 package com.example.roomdbdemo
 
 import android.content.Context
+import android.os.AsyncTask
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  *Created by Ankit Bajaj on 13-06-2020.
@@ -23,9 +25,28 @@ abstract class NoteDatabase private constructor(context: Context) : RoomDatabase
                 context.applicationContext,
                 NoteDatabase::class.java,
                 "note_database"
-            ).fallbackToDestructiveMigration().build().also {
+            ).fallbackToDestructiveMigration().addCallback(roomDatabaseCallback).build().also {
                 instance = it
             }
+        }
+
+        // Database callback
+        private val roomDatabaseCallback = object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                InsertNoteAsyncTask(instance!!.noteDao()).execute()
+            }
+        }
+
+        // Inner class to insert data into table on creation
+        private class InsertNoteAsyncTask(private val noteDao: NoteDao) :
+            AsyncTask<Unit, Unit, Unit>() {
+
+            override fun doInBackground(vararg p0: Unit?) {
+                noteDao.insert(Note("Java", "Java is not supported in Android Studio", 2))
+                noteDao.insert(Note("Java", "Java is not supported in Android Studio", 1))
+            }
+
         }
     }
 }
